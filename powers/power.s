@@ -34,7 +34,7 @@ main:
 
     # TEST let's see if this can print my value
     movq    $0, %rax            # no vector registers in use for printf
-    movq    %rsi, %rdi          # first parameter (rsi, where our input value is stored). We copy this value into the RDI register, the first parameter register
+    movq    $input1, %rdi       # first parameter (rsi, where our input value is stored). We copy this value into the RDI register, the first parameter register
     call    printf              # now we call the function and let it print the rdi register
 
 
