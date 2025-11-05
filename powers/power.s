@@ -12,32 +12,57 @@ input2: .asciz "%ld"
 .global main
 
 
-
 main:
     # Prologue (lines at the start of a function that prepare the stack and registers for use)
     pushq   %rbp                # push the base pointer
     movq    %rsp, %rbp          # copy stack pointer value to base pointer
     
     # main program
+
+    # calling printf, first prompt
     movq    $0, %rax            # no vector registers in use for printf
     movq    $first_prompt, %rdi # first parameter: first_prompt string
     call    printf              # call printf, which will take the value of rdi register and print
    
+    #calling scanf, input1
     subq    $16, %rsp           # reserve space in stack for the first input
     movq    $0, %rax            # no vector registers in use for scanf
     movq    $input1, %rdi       # first parameter: input format string
     leaq    -16(%rbp), %rsi     # lea: load effective address. But for some reason this is a parameter: address of the reserved space (which does make sense)
     call    scanf
 
+    # copying the input1 value
     movq    -16(%rbp), %rsi     # load the input value into RSI
                                 # RSI is the second parameter register
+    movq    %rsi, %r12          # Save the value somewhere it won't be nuked                    
 
-    # TEST let's see if this can print my value
+    # calling printf, second prompt
     movq    $0, %rax            # no vector registers in use for printf
-    movq    $input1, %rdi       # first parameter (rsi, where our input value is stored). We copy this value into the RDI register, the first parameter register
-    call    printf              # now we call the function and let it print the rdi register
+    movq    $second_prompt, %rdi# first parameter: second_prompt string
+    call    printf              # call printf
 
+    # calling scanf, input2
+    subq    $16, %rsp           # reserve space in stack for the second input
+    movq    $0, %rax            # no vector registers in use for scanf
+    movq    $input2, %rdi       # first parameter: input format string
+    leaq    -16(%rbp), %rsi     # lea: load effective address.
+    call    scanf
 
+    # copying the input2 value
+    movq    -16(%rbp), %rsi     # I'm just going to load it into rsi like I did with the other value whatever
+    movq    %rsi, %r13          # Save the value somewhere it won't be nuked
+
+    # calling printf, third prompt
+    movq    $0, %rax            # no vector registers in use for printf
+    movq    $third_prompt, %rdi # first parameter: third_prompt string
+    call    printf              # call printf
+    
+    # calling power
+    movq    $0, %rax            # no vector registers in use for power (actually that might not be true)
+    movq    %r12, %rdi          # first parameter: input1, which was moved to the r12 value before
+    movq    %r13, %rsi          # second paramater: input2, which was moved to the r13 value before
+    call    power               # call power
+    
 
     # Epilogue (lines at the end of a function that store the old base pointer and copy the stack pointer to be a new base pointer)
     movq    %rbp, %rsp          # clear local variables from stack
@@ -53,6 +78,22 @@ end: # this loads the program exit code and exits the program
 
 
 power:
+    # Prologue
     pushq   %rbp                # push the base pointer
     movq    %rsp, %rbp          # copy stack pointer value to base pointer
-    
+
+    # Subroutine
+
+    # assign value of base to "total", which now is just going to be a register I guess
+    movq    %rdx, %rdi
+
+
+    loop: # multiply total by input1 an inpu times 
+        t2 number of
+        sub     %rsi, 1             # subtract 1 from input2, aka exp
+        cmpq    %rsi, %rax          # if RAX < input2
+        jl      
+
+    end:
+
+    movq   
