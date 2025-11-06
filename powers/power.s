@@ -3,9 +3,9 @@
 first_prompt: .asciz "\nWELCOME TO EXPONENTIATOR.\nENTER A VALUE: "
 second_prompt: .asciz "\nEXCELLENT. NOW ENTER AN EXPONENT: "
 third_prompt: .asciz "\nCALCULATING YOUR EXPONENTIATED VALUE..."
-fourth_prompt: .asciz "\nYOUR EXPONENTIATED VALUE IS EQUAL TO: "
+fourth_prompt: .asciz "\nYOUR EXPONENTIATED VALUE IS EQUAL TO: %ld. \n"
 
-# here we store two input variables, which scanf will use to 
+# here we store two format strings
 input1: .asciz "%ld"
 input2: .asciz "%ld"
 
@@ -63,6 +63,12 @@ main:
     movq    %r13, %rsi          # second paramater: input2, which was moved to the r13 value before
     call    power               # call power
     
+    # calling printf, fourth prompt
+    movq    $fourth_prompt, %rdi# first parameter: fourth_prompt string
+    movq    %rax, %rsi          # second parameter: the return value of power
+    movq    $0, %rax            # this may be necessary?
+    call    printf              # call printf
+
 
     # Epilogue (lines at the end of a function that store the old base pointer and copy the stack pointer to be a new base pointer)
     movq    %rbp, %rsp          # clear local variables from stack
@@ -82,18 +88,38 @@ power:
     pushq   %rbp                # push the base pointer
     movq    %rsp, %rbp          # copy stack pointer value to base pointer
 
-    # Subroutine
+    # Subroutine power
 
-    # assign value of base to "total", which now is just going to be a register I guess
-    movq    %rdx, %rdi
+    # assign correct values to function registers
+    movq    %rdi, %rax           # assign value of input1 (base) to rax ("total")
+    decq    %rsi                 # subtract 1 from input2 (exp)
+    movq    $0, %r15             # assign value 0 to r15 (i)
+
+    # note the following
+    # input1 (base) = rdi
+    # input2 (exp)  = rsi
+    # total         = rax
+    # i             = r15 (at this point in time)
 
 
-    loop: # multiply total by input1 an inpu times 
-        t2 number of
-        sub     %rsi, 1             # subtract 1 from input2, aka exp
-        cmpq    %rsi, %rax          # if RAX < input2
-        jl      
+    loop: # multiply total by input1 an input2 number of times
+        
+        cmpq    %rsi, %r15       # if r15 == input2
+        je      endloop          # stop looping
 
-    end:
+        # at this point in time, the condition has passed that the loop should run
 
-    movq   
+        # do the math
+        imul    %rdi             # total times base once
+
+        # repeat
+        incq    %r15
+        jmp loop 
+
+    endloop:
+
+        # Epilogue (and return with rax)
+        movq    %rbp, %rsp       # clear local variables from stack (whatever that means)
+        popq    %rbp             # restore base pointer location
+
+        ret                      # return from subroutine
